@@ -7,7 +7,7 @@ from alembic import context
 
 from dotenv import load_dotenv,get_key
 
-from Backend.DTOs.base import Base
+from DTOs.base import Base
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -19,7 +19,7 @@ if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
 load_dotenv()
-config.set_main_option('sqlalchemy.url',get_key('DATABASE_CONEXION_STRING'))
+config.set_main_option('sqlalchemy.url',get_key('.env','DATABASE_CONEXION_STRING'))
 # add your model's MetaData object here
 # for 'autogenerate' support
 # from myapp import mymodel
