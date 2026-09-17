@@ -43,7 +43,7 @@ def upgrade() -> None:
     op.create_check_constraint('TOURNAMENT_INSCRIPTION_CK','tournaments',condition='inscript_min <= inscript_max')
     op.create_check_constraint('TOURNAMENT_INSCRIPTION_MIN_CK','tournaments',condition='inscript_min >= 2')
     op.create_check_constraint('TOURNAMENT_INSCRIPTION_MAX_CK','tournaments',condition='inscript_max <= 32')
-    op.create_check_constraint('TOURNAMENT_DATE_CK','tournaments',condition='EXTRACT( DAY FROM (date_de_fin_inscription - date_de_creation)) <= COALESCE(inscript_min,2)')
+    op.create_check_constraint('TOURNAMENT_DATE_CK','tournaments',condition='EXTRACT( DAY FROM (date_de_fin_inscription - date_de_creation)) <= inscript_min')
 
     op.create_table('inscription',
     sa.Column('id_user', sa.Integer(), nullable=False),
@@ -64,4 +64,5 @@ def downgrade() -> None:
     op.drop_column('users', 'date_de_naissance')
     op.drop_table('inscription')
     op.drop_table('tournaments')
+    sa.Enum('EnAttente', 'EnCours', 'Termine', name='status').drop(op.get_bind())
     # ### end Alembic commands ###
