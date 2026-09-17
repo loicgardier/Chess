@@ -1,6 +1,6 @@
 from .base import Base
-from sqlalchemy.orm import Mapped,mapped_column
-from sqlalchemy import String,Integer,CheckConstraint,DateTime
+from sqlalchemy.orm import Mapped,mapped_column,relationship
+from sqlalchemy import String,Integer,CheckConstraint,DateTime,Boolean
 from datetime import datetime
 
 from enum import StrEnum,auto
@@ -26,4 +26,6 @@ class Users(Base):
     elo:Mapped[int] = mapped_column(Integer,CheckConstraint(sqltext='elo BETWEEN 0 AND 3000',name='ELO_CK'),nullable=False,default=1200)
     role:Mapped[Roles] = mapped_column(Enum(Roles),nullable=False,default=Roles.User)
     date_de_naissance: Mapped[datetime] = mapped_column(DateTime,nullable=False)
+    allow_mail:Mapped[bool] =mapped_column(Boolean,nullable=False,default=False)
 
+    inscriptions : Mapped[list["Inscription"]] = relationship("Inscription",back_populates="users")
