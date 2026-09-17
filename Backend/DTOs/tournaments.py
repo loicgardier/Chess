@@ -34,4 +34,4 @@ class Tournaments(Base):
     date_de_fin_inscription: Mapped[datetime] = mapped_column(DateTime,nullable=False)
     date_de_derniere_mise_a_jour: Mapped[datetime] = mapped_column(DateTime,nullable=False)
 
-    inscriptions : Mapped[list["Inscription"]] = relationship("Inscription",back_populates="tournaments")
+    inscriptions : Mapped[list["Inscription"]] = relationship("Inscription",back_populates="tournaments") # pyright: ignore[reportUndefinedVariable]

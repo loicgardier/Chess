@@ -28,4 +28,4 @@ class Users(Base):
     date_de_naissance: Mapped[datetime] = mapped_column(DateTime,nullable=False)
     allow_mail:Mapped[bool] =mapped_column(Boolean,nullable=False,default=False)
 
-    inscriptions : Mapped[list["Inscription"]] = relationship("Inscription",back_populates="users")
+    inscriptions : Mapped[list["Inscription"]] = relationship("Inscription",back_populates="users") # pyright: ignore[reportUndefinedVariable]
