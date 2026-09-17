@@ -26,7 +26,6 @@ class Tournaments(Base):
     inscript_max:Mapped[int] = mapped_column(Integer,nullable=False,default=32)
     elo_min:Mapped[int] = mapped_column(Integer,nullable=True)
     elo_max:Mapped[int] = mapped_column(Integer,nullable=True)
-    category:Mapped[Categories] = mapped_column(Enum(Categories),nullable=False)
     status:Mapped[Status] = mapped_column(Enum(Status),nullable=False,default=Status.EnAttente)
     ronde:Mapped[int] = mapped_column(Integer,nullable=False,default=0)
     women_only:Mapped[bool] =mapped_column(Boolean,nullable=False,default=False)
@@ -34,4 +33,6 @@ class Tournaments(Base):
     date_de_fin_inscription: Mapped[datetime] = mapped_column(DateTime,nullable=False)
     date_de_derniere_mise_a_jour: Mapped[datetime] = mapped_column(DateTime,nullable=False)
 
-    inscriptions : Mapped[list["Inscription"]] = relationship("Inscription",back_populates="tournaments") # pyright: ignore[reportUndefinedVariable]
+    inscriptions : Mapped[list["Inscriptions"]] = relationship("Inscription",back_populates="tournament") # pyright: ignore[reportUndefinedVariable]
+    rencontres : Mapped[list["Rencontres"]] = relationship("Rencontres",back_populates="tournament") # pyright: ignore[reportUndefinedVariable]
+    tournaments_categories : Mapped[list["TournamentsCategories"]] = relationship("TournamentsCategories",back_populates="tournament") # pyright: ignore[reportUndefinedVariable]
