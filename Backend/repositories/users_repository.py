@@ -3,7 +3,7 @@ from DTOs.users import Users
 from utils import hash_utils
 from sqlalchemy import or_
 
-class UserRepository:
+class UsersRepository:
 
     def __init__(self,session:Session):
         self.__session=session
