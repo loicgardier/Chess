@@ -11,3 +11,6 @@ class Categories(Base):
     name:Mapped[str] = mapped_column(String,unique=True,nullable=False)
 
     tournaments_categories : Mapped[list["TournamentsCategories"]] = relationship("TournamentsCategories",back_populates="categorie") # pyright: ignore[reportUndefinedVariable]
+
+    def __repr__(self):
+        return f'<Categories {self.id}>'

@@ -31,3 +31,6 @@ class Users(Base):
     inscriptions : Mapped[list["Inscription"]] = relationship("Inscription",back_populates="user") # pyright: ignore[reportUndefinedVariable]
     rencontres_blanc: Mapped[list["Rencontres"]] = relationship("Rencontres",back_populates="blanc") # pyright: ignore[reportUndefinedVariable]
     rencontres_noir: Mapped[list["Rencontres"]] = relationship("Rencontres",back_populates="noir") # pyright: ignore[reportUndefinedVariable]
+
+    def __repr__(self):
+        return f'<Users {self.id}>'

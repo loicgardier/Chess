@@ -10,3 +10,6 @@ class TournamentsCategories(Base):
 
     categorie : Mapped["Categories"] = relationship("Categories",back_populates="tournaments_categories",uselist=False)  # pyright: ignore[reportUndefinedVariable]
     tournament : Mapped["Tournaments"] = relationship("Tournaments",back_populates="tournaments_categories",uselist=False)  # pyright: ignore[reportUndefinedVariable]
+
+    def __repr__(self):
+        return f'<TournamentsCategories {self.id_tournament} - {self.id_categorie}>'

@@ -36,3 +36,6 @@ class Tournaments(Base):
     inscriptions : Mapped[list["Inscriptions"]] = relationship("Inscription",back_populates="tournament") # pyright: ignore[reportUndefinedVariable]
     rencontres : Mapped[list["Rencontres"]] = relationship("Rencontres",back_populates="tournament") # pyright: ignore[reportUndefinedVariable]
     tournaments_categories : Mapped[list["TournamentsCategories"]] = relationship("TournamentsCategories",back_populates="tournament") # pyright: ignore[reportUndefinedVariable]
+
+    def __repr__(self):
+        return f'<Tournaments {self.id}>'
