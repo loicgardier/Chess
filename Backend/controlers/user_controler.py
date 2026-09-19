@@ -1,9 +1,12 @@
 from fastapi import FastAPI,APIRouter,Body,Depends,HTTPException
 from dtos.user_inscription_request import UserInscriptionRequest
 from dtos.user_inscription_response import UserInscriptionReponse
+from dtos.user_connection_request import UserConnectionRequest
+from dtos.user_connection_response import UserConnectionReponse
 from repositories.users_repository import UsersRepository
 from utils import jwt_utils  
-from exceptions.users_exceptions import ExistingPseudo,ExistingMail,ExistingMailPseudo
+from exceptions.users_exceptions import ExistingPseudo,ExistingMail,ExistingMailPseudo,UnknowMailPseudo
+from argon2.exceptions import VerifyMismatchError
 
 user_router = APIRouter(prefix="/users",tags=["users"])
 
@@ -51,11 +54,40 @@ async def inscription(
             "input": user.email,
             }
         ])
-#    except:
-#        raise HTTPException(status_code=500)
+    except:
+        raise HTTPException(status_code=500)
 
 @user_router.post('/conection')
-async def conection():
-    pass
+async def conection(
+        user:UserConnectionRequest = Body(),
+        user_repository:UsersRepository=Depends(UsersRepository)
+    ):
+    try:
+        if user_repository.verify(user.pseudo_or_mail,user.password):
+            user_db=user_repository.get_by_mail_or_pseudo(user.pseudo_or_mail)
+            response =UserConnectionReponse()
+            response.token = jwt_utils.encode(user_db.to_jwt())
+            return response
+    except VerifyMismatchError:
+            raise HTTPException(status_code=422,detail=[
+                {
+                "loc": ["body","password"],
+                "msg": "password is not valid",
+                "type": "value_error",
+                "input": '',
+                }
+            ])
+    except UnknowMailPseudo:
+        raise HTTPException(status_code=422,detail=[
+            {
+            "loc": ["body","pseudo_or_mail"],
+            "msg": "Email or pseudo is unknown",
+            "type": "value_error",
+            "input": user.pseudo_or_mail,
+            }
+        ])
+    #except:
+    #    raise HTTPException(status_code=500)
+    
 
 #def update_profile

@@ -4,7 +4,7 @@ from utils import hash_utils
 from sqlalchemy import or_
 from fastapi import Depends
 from utils.session_utils import get_session
-from exceptions.users_exceptions import ExistingMail,ExistingMailPseudo,ExistingPseudo
+from exceptions.users_exceptions import ExistingMail,ExistingMailPseudo,ExistingPseudo,UnknowMailPseudo
 
 class UsersRepository:
 
@@ -14,14 +14,18 @@ class UsersRepository:
     def get_one(self,id:int)->Users|None:
         self.__session.get(Users,id)
 
+    def get_by_mail_or_pseudo(self,mail_or_pseudo:str)->Users|None:
+        return self.__session.query(Users).where(or_(Users.pseudo==mail_or_pseudo,Users.email==mail_or_pseudo)).first()
+
     def get_all(self)->list[Users]:
         return self.__session.query(Users).all()
 
-    def verify(self,id:str,password:str)->bool:
-        user = self.__session.query(Users).where(or_(Users.pseudo==id,Users.email==id)).first()
+    def verify(self,mail_or_pseudo:str,password:str)->bool:
+        user = self.get_by_mail_or_pseudo(mail_or_pseudo)
         if user:
             return hash_utils.verify(user.password,password)
-        return False
+        else:
+            raise UnknowMailPseudo()
 
     def add(self,user:Users)->Users:
 
