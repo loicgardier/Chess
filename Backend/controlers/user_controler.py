@@ -7,19 +7,26 @@ from repositories.users_repository import UsersRepository
 from utils import jwt_utils  
 from exceptions.users_exceptions import ExistingPseudo,ExistingMail,ExistingMailPseudo,UnknowMailPseudo
 from argon2.exceptions import VerifyMismatchError
-
+from services.mailer import Mailer
+from pathlib import Path
 user_router = APIRouter(prefix="/users",tags=["users"])
 
 
 @user_router.post('/inscription')
 async def inscription(
     user:UserInscriptionRequest = Body(),
-    user_repository:UsersRepository=Depends(UsersRepository)
+    user_repository:UsersRepository=Depends(UsersRepository),
+    mailer:Mailer=Depends(Mailer)
     )->UserInscriptionReponse:
     try:
         user_added=user_repository.add(user.to_user_model())
+        template_path = Path("Backend/templates/inscription.html")
+        body=template_path.read_text("utf-8")
+        body =body.format(name=user.pseudo)
+        mailer.send_mail('Crétion du compte',user.email,body)
         response =UserInscriptionReponse()
         response.token = jwt_utils.encode(user_added.to_jwt())
+
         return response
     except ExistingMail:
         raise HTTPException(status_code=422,detail=[
@@ -54,8 +61,8 @@ async def inscription(
             "input": user.email,
             }
         ])
-    except:
-        raise HTTPException(status_code=500)
+    #except:
+    #    raise HTTPException(status_code=500)
 
 @user_router.post('/conection')
 async def conection(
