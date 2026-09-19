@@ -1,8 +1,9 @@
 import jwt
-from dotenv import load_dotenv,get_key
+from dotenv import load_dotenv
+import os
 
 load_dotenv()
-key=get_key('.env','KEY')
+key=os.environ["KEY"]
 
 def encode(user):
     return jwt.encode(user,key,algorithm="HS256")
