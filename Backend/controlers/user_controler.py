@@ -14,9 +14,9 @@ async def inscription(
     user_repository:UsersRepository=Depends(UsersRepository)
     )->UserInscriptionReponse:
     try:
-        user_repository.add(user.to_user_model())
-        response =UserInscriptionReponse
-        response.token = jwt_utils.encode(user)
+        user_added=user_repository.add(user.to_user_model())
+        response =UserInscriptionReponse()
+        response.token = jwt_utils.encode(user_added.to_jwt())
         return response
     except ExistingMail:
         raise HTTPException(status_code=422,detail=[

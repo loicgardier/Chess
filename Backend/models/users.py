@@ -34,3 +34,8 @@ class Users(Base):
 
     def __repr__(self):
         return f'<Users {self.id}>'
+
+    def to_jwt(self)->dict:
+        return {'id':self.id,
+                'pseudo':self.pseudo,
+                'role':self.role}

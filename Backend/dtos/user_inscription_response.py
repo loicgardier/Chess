@@ -2,4 +2,4 @@ from pydantic import Field,BaseModel
 
 
 class UserInscriptionReponse(BaseModel):
-    token:str =Field(description="bearer token")
+    token:str =Field(description="bearer token",default='')
