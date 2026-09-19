@@ -1,10 +1,10 @@
 from datetime import datetime
 
 from sqlalchemy.orm import Session
-from Backend.DTOs.tournaments_categories import TournamentsCategories
-from DTOs.inscriptions import Inscriptions
-from DTOs.users import Users
-from DTOs.tournaments import Tournaments
+from Backend.models.tournaments_categories import TournamentsCategories
+from models.inscriptions import Inscriptions
+from models.users import Users
+from models.tournaments import Tournaments
 
 class TournamentsRepository:
 

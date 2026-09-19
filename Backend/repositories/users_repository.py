@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from DTOs.users import Users
+from models.users import Users
 from utils import hash_utils
 from sqlalchemy import or_
 
