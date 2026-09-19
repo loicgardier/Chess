@@ -2,10 +2,13 @@ from sqlalchemy.orm import Session
 from models.users import Users
 from utils import hash_utils
 from sqlalchemy import or_
+from fastapi import Depends
+from utils.session_utils import get_session
+from exceptions.users_exceptions import ExistingMail,ExistingMailPseudo,ExistingPseudo
 
 class UsersRepository:
 
-    def __init__(self,session:Session):
+    def __init__(self,session:Session=Depends(get_session)):
         self.__session=session
 
     def get_one(self,id:int)->Users|None:
@@ -21,6 +24,16 @@ class UsersRepository:
         return False
 
     def add(self,user:Users)->Users:
+
+        pseudo = self.__session.query(Users).where(Users.pseudo==user.pseudo).first()
+        email = self.__session.query(Users).where(Users.email==user.email).first()
+        if pseudo and email:
+            raise ExistingMailPseudo()
+        elif email:
+            raise ExistingMail()
+        elif pseudo:
+            raise ExistingPseudo()
+
         user.password=hash_utils.hash(user.password)
         self.__session.add(user)
         self.__session.commit()
