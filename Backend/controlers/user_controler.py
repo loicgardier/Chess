@@ -1,4 +1,4 @@
-from fastapi import FastAPI,APIRouter,Body,Depends,HTTPException
+from fastapi import APIRouter,Body,Depends,HTTPException
 from dtos.user_inscription_request import UserInscriptionRequest
 from dtos.user_inscription_response import UserInscriptionReponse
 from dtos.user_connection_request import UserConnectionRequest
@@ -9,6 +9,7 @@ from exceptions.users_exceptions import ExistingPseudo,ExistingMail,ExistingMail
 from argon2.exceptions import VerifyMismatchError
 from services.mailer import Mailer
 from pathlib import Path
+
 user_router = APIRouter(prefix="/users",tags=["users"])
 
 

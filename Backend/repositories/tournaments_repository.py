@@ -1,14 +1,16 @@
 from datetime import datetime
 
 from sqlalchemy.orm import Session
-from Backend.models.tournaments_categories import TournamentsCategories
+from models.tournaments_categories import TournamentsCategories
 from models.inscriptions import Inscriptions
 from models.users import Users
 from models.tournaments import Tournaments
+from utils.session_utils import get_session
+from fastapi import Depends
 
 class TournamentsRepository:
 
-    def __init__(self,session:Session):
+    def __init__(self,session:Session=Depends(get_session)):
         self.__session=session
 
     def get_one(self,id:int)->Tournaments|None:

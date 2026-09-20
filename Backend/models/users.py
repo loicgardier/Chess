@@ -1,7 +1,7 @@
 from .base import Base
 from sqlalchemy.orm import Mapped,mapped_column,relationship
 from sqlalchemy import String,Integer,CheckConstraint,DateTime,Boolean
-from datetime import datetime
+from datetime import datetime,timedelta,timezone
 
 from enum import StrEnum,auto
 from sqlalchemy.types import Enum
@@ -36,6 +36,8 @@ class Users(Base):
         return f'<Users {self.id}>'
 
     def to_jwt(self)->dict:
-        return {'id':self.id,
+        return {'sub':str(self.id),
                 'pseudo':self.pseudo,
-                'role':self.role}
+                'role':self.role,
+                'iat':datetime.now(timezone.utc),
+                'exp':datetime.now(timezone.utc)+timedelta(minutes=5)}

@@ -5,8 +5,8 @@ import os
 load_dotenv()
 key=os.environ["KEY"]
 
-def encode(user):
+def encode(user)->str:
     return jwt.encode(user,key,algorithm="HS256")
 
-def decode(token:str):
+def decode(token:str)->dict:
     return jwt.decode(token,key,algorithms="HS256")
