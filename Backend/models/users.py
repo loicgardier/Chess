@@ -2,6 +2,7 @@ from .base import Base
 from sqlalchemy.orm import Mapped,mapped_column,relationship
 from sqlalchemy import String,Integer,CheckConstraint,DateTime,Boolean
 from datetime import datetime,timedelta,timezone
+import os
 
 from enum import StrEnum,auto
 from sqlalchemy.types import Enum
@@ -40,4 +41,4 @@ class Users(Base):
                 'pseudo':self.pseudo,
                 'role':self.role,
                 'iat':datetime.now(timezone.utc),
-                'exp':datetime.now(timezone.utc)+timedelta(minutes=5)}
+                'exp':datetime.now(timezone.utc)+timedelta(minutes=int(os.environ["ACCESS_TOKEN_EXPIRE_MINUTES"]))}
