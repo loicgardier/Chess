@@ -20,7 +20,8 @@ async def inscription(
     response:Response,
     user:UserInscriptionRequest = Body(),
     user_repository:UsersRepository=Depends(UsersRepository),
-    mailer:Mailer=Depends(Mailer)
+    mailer:Mailer=Depends(Mailer),
+    refresh_token_repository : RefreshTokenRepository=Depends(RefreshTokenRepository)
     )->UserInscriptionReponse:
     try:
         user_added=user_repository.add(user.to_user_model())
@@ -28,7 +29,7 @@ async def inscription(
         body=template_path.read_text("utf-8")
         body =body.format(name=user.pseudo)
         mailer.send_mail('Crétion du compte',user.email,body)
-        refresh_token = jwt_utils.create_and_store_refresh_token(user_added.pseudo)
+        refresh_token = jwt_utils.create_and_store_refresh_token(user_added.pseudo,refresh_token_repository)
         jwt_utils.set_refresh_cookie(response,refresh_token)
         access_token =UserInscriptionReponse()
         access_token.token = jwt_utils.encode(user_added.to_jwt())
@@ -70,20 +71,21 @@ async def inscription(
     #except:
     #    raise HTTPException(status_code=500)
 
-@user_router.post('/conection')
+@user_router.post('/connection')
 async def conection(
         response:Response,
         user:UserConnectionRequest = Body(),
-        user_repository:UsersRepository=Depends(UsersRepository)
+        user_repository:UsersRepository=Depends(UsersRepository),
+        refresh_token_repository : RefreshTokenRepository=Depends(RefreshTokenRepository)
     ):
     try:
         if user_repository.verify(user.pseudo_or_mail,user.password):
             user_db=user_repository.get_by_mail_or_pseudo(user.pseudo_or_mail)
-            refresh_token = jwt_utils.create_and_store_refresh_token(user_db.pseudo)
+            refresh_token = jwt_utils.create_and_store_refresh_token(user_db.pseudo,refresh_token_repository)
             jwt_utils.set_refresh_cookie(response,refresh_token)
-            response =UserConnectionReponse()
-            response.token = jwt_utils.encode(user_db.to_jwt())
-            return response
+            access_token =UserConnectionReponse()
+            access_token.token = jwt_utils.encode(user_db.to_jwt())
+            return access_token
     except VerifyMismatchError:
             raise HTTPException(status_code=422,detail=[
                 {
@@ -113,7 +115,7 @@ async def refresh_access_token(
      user_repository:UsersRepository=Depends(UsersRepository)
     )->UserConnectionReponse:
     refresh_token = request.cookies.get("refresh_token")
-    token_data=refresh_token_repository.get_by_username(refresh_token)
+    token_data=refresh_token_repository.get_one(refresh_token)
     if not token_data:
         raise HTTPException(
             status_code=401,
@@ -121,11 +123,14 @@ async def refresh_access_token(
         )
     if token_data.is_revoked:
         response.delete_cookie(key="refresh_token", path="/users", samesite="none",secure=True)
+        tokens = refresh_token_repository.get_by_user(token_data.username)
+        for token in tokens:
+            refresh_token_repository.revoke(token.id)
         raise HTTPException(
             status_code=401,
-            detail="Alerte sécurité : Tentative de réutilisation d'un jeton. Session bloquée."
+            detail="Alerte sécurité : Tentative de réutilisation d'un jeton. Session bloquée.",
         )
-    if datetime.now(timezone.utc) > token_data["expires_at"]:
+    if datetime.now(timezone.utc) > token_data.expires_at:
         refresh_token_repository.revoke(token_data.id)
         response.delete_cookie(key="refresh_token", path="/users", samesite="none",secure=True)
         raise HTTPException(
@@ -136,7 +141,7 @@ async def refresh_access_token(
 
     user=user_repository.get_by_mail_or_pseudo(token_data.username)
     new_access_token = jwt_utils.encode(user=user.to_jwt())
-    new_refresh_token = jwt_utils.create_and_store_refresh_token(token_data.username)
+    new_refresh_token = jwt_utils.create_and_store_refresh_token(token_data.username,refresh_token_repository)
     # Inserer le nouveau cookie de rotation
     jwt_utils.set_refresh_cookie(response, new_refresh_token)
     return UserConnectionReponse(token=new_access_token)

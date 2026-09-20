@@ -17,13 +17,12 @@ def encode(user)->str:
 def decode(token:str)->dict:
     return jwt.decode(token,key,algorithms="HS256")
 
-def create_and_store_refresh_token(username: str) -> str:
+def create_and_store_refresh_token(username: str,refresh_token_repository:RefreshTokenRepository) -> str:
     """Génère un Refresh Token Opaque et le stocke en Base de Données."""
     token_string = token_urlsafe(64)
     expires_at = datetime.now(timezone.utc) + timedelta(days=int(os.environ['REFRESH_TOKEN_EXPIRE_DAYS']))
-    refresh_token_repository= RefreshTokenRepository()
     refresh_token= RefreshToken()
-    refresh_token.id=hash_utils.hash(token_string)
+    refresh_token.id=token_string
     refresh_token.expires_at=expires_at
     refresh_token.username=username
     refresh_token_repository.add(refresh_token)

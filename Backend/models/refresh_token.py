@@ -10,8 +10,8 @@ class RefreshToken(Base):
 
 
     id:Mapped[str] = mapped_column(String,primary_key=True,autoincrement=False)
-    username:Mapped[str] = mapped_column(String,unique=True,nullable=False)
-    expires_at: Mapped[datetime] = mapped_column(DateTime,nullable=False)
+    username:Mapped[str] = mapped_column(String,nullable=False)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True),nullable=False)
     is_revoked:Mapped[bool] =mapped_column(Boolean,nullable=False,default=False)
 
     def __repr__(self):

@@ -9,11 +9,11 @@ class RefreshTokenRepository:
     def __init__(self,session:Session=Depends(get_session)):
         self.__session=session
 
-    def get_one(self,id:int)->RefreshToken|None:
-        self.__session.get(RefreshToken,id)
+    def get_one(self,token:str)->RefreshToken|None:
+        return self.__session.get(RefreshToken,token)
 
-    def get_by_username(self,username:str)->RefreshToken|None:
-        return self.__session.query(RefreshToken).where(RefreshToken.username==str).where(RefreshToken.expires_at>datetime.now()).first()
+    def get_by_user(self,user:str)->list[RefreshToken]:
+        return self.__session.query(RefreshToken).where(RefreshToken.username==user).all()
 
     def add(self,refresh:RefreshToken)->RefreshToken:
         self.__session.add(refresh)
@@ -21,8 +21,8 @@ class RefreshTokenRepository:
         self.__session.refresh(refresh)
         return refresh
         
-    def revoke(self,id:int)->RefreshToken|None:
-        refresh_to_modify= self.get_one(id)
+    def revoke(self,token:str)->RefreshToken|None:
+        refresh_to_modify= self.get_one(token)
         if refresh_to_modify:
             refresh_to_modify.is_revoked=True
             self.__session.commit()
