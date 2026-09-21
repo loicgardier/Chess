@@ -146,4 +146,20 @@ async def refresh_access_token(
     jwt_utils.set_refresh_cookie(response, new_refresh_token)
     return UserConnectionReponse(token=new_access_token)
 
+@user_router.post("/logout")
+async def logout(
+    request:Request,
+    response:Response,
+    refresh_token_repository:RefreshTokenRepository=Depends(RefreshTokenRepository),
+    ):
+    refresh_token = request.cookies.get("refresh_token")
+    token_data=refresh_token_repository.get_one(refresh_token)
+    if not token_data:
+        raise HTTPException(
+            status_code=401,
+            detail="Refresh token manquant ou inconnu."
+        )
+    else:
+        response.delete_cookie(key="refresh_token", path="/users", samesite="none",secure=True)
+        refresh_token_repository.revoke(refresh_token)
     #def update_profile
