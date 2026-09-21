@@ -21,7 +21,7 @@ class Tournaments(Base):
 
     id:Mapped[int] = mapped_column(Integer,primary_key=True)
     nom:Mapped[str] = mapped_column(String,nullable=False)
-    lieu:Mapped[str] = mapped_column(String)
+    lieu:Mapped[str] = mapped_column(String,nullable=True)
     inscript_min:Mapped[int] = mapped_column(Integer,nullable=False,default=2)
     inscript_max:Mapped[int] = mapped_column(Integer,nullable=False,default=32)
     elo_min:Mapped[int] = mapped_column(Integer,nullable=True)

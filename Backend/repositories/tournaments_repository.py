@@ -14,13 +14,22 @@ class TournamentsRepository:
         self.__session=session
 
     def get_one(self,id:int)->Tournaments|None:
-        self.__session.get(Tournaments,id)
+        return self.__session.get(Tournaments,id)
+
+    def get_ten(self)->list[Tournaments]:
+        return self.__session.query(Tournaments)\
+            .where(Tournaments.status!=Tournaments.Status.Termine)\
+            .order_by(Tournaments.date_de_derniere_mise_a_jour.desc())\
+            .limit(10).all()
 
     def get_all(self)->list[Tournaments]:
         return self.__session.query(Tournaments).all()
 
     def get_categories(self)->list[TournamentsCategories]:
         return self.__session.query(TournamentsCategories).all()
+
+    def get_nb_inscript(self,id:int)->int:
+        return self.__session.query(Inscriptions).where(Inscriptions.id_tournament==id).count()
 
     def add(self,tournament:Tournaments,categories:list[int])->Tournaments:
         self.__session.add(tournament)
@@ -85,25 +94,44 @@ class TournamentsRepository:
             return True
         return False
 
-    def subscribe_user(self,id_user:int,id_tournament:int)->Inscriptions|None:
+    def can_register(self,id_user:int,id_tournament:int)->bool:
         tournament = self.__session.get_one(Tournaments,id_tournament)
-        user = self.__session.get_one(Users,id_tournament)
-        nb_inscript =  self.__session.query(Inscriptions).where(Inscriptions.id_tournament==id_tournament).count()
-        if tournament and user and\
-        user.elo<=tournament.elo_max and user.elo>=tournament.elo_min and\
-        ((tournament.women_only and user.genre==Users.Genders.Femme)or not tournament.women_only ) and\
-        tournament.date_de_fin_inscription>datetime.now() and tournament.status==Tournaments.Status.EnAttente and\
-        nb_inscript<tournament.inscript_max:#age
-                inscription=Inscriptions()
-                inscription.id_user=id_user
-                inscription.id_tournament=id_tournament
-                self.__session.add(inscription)
-                self.__session.commit()
-                self.__session.refresh(inscription)
-                return inscription
+        user = self.__session.get_one(Users,id_user)
+        nb_inscript =  self.get_nb_inscript(id_tournament)
+        now =datetime.now()
+
+        age = now.year - user.date_de_naissance.year
+        if(user.date_de_naissance.month<now.month or (user.date_de_naissance.month== now.month and user.date_de_naissance.day<now.day)):
+            age =age -1
+
+        return tournament and user and\
+            user.elo<=tournament.elo_max and user.elo>=tournament.elo_min and\
+            ((tournament.women_only and user.genre==Users.Genders.Femme)or not tournament.women_only ) and\
+            tournament.date_de_fin_inscription>datetime.now() and tournament.status==Tournaments.Status.EnAttente and\
+            nb_inscript<tournament.inscript_max
+        #age
+
+
+    def register_user(self,id_user:int,id_tournament:int)->Inscriptions|None:
+        if self.can_register(id_user,id_tournament):
+            inscription=Inscriptions()
+            inscription.id_user=id_user
+            inscription.id_tournament=id_tournament
+            self.__session.add(inscription)
+            self.__session.commit()
+            self.__session.refresh(inscription)
+            return inscription
         return None
 
-    def unsubscribe_user(self,id_user:int,id_tournament:int)->bool:
+    def is_registered(self,id_user:int,id_tournament:int)->bool:
+        try:
+            self.__session.get_one(Inscriptions,{'id_user':id_user,'id_tournament':id_tournament})
+            return True
+        except:
+            return False
+
+
+    def unregister_user(self,id_user:int,id_tournament:int)->bool:
         tournament = self.__session.get_one(Tournaments,id_tournament)
         if tournament and tournament.status==Tournaments.Status.EnAttente:
             inscription=self.__session.get_one(Inscriptions,{'id_user':id_user,'id_tournament':id_tournament})
