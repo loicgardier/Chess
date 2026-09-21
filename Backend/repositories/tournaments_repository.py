@@ -5,6 +5,7 @@ from models.tournaments_categories import TournamentsCategories
 from models.inscriptions import Inscriptions
 from models.users import Users
 from models.tournaments import Tournaments
+from models.categories import Categories
 from utils.session_utils import get_session
 from fastapi import Depends
 
@@ -101,15 +102,25 @@ class TournamentsRepository:
         now =datetime.now()
 
         age = now.year - user.date_de_naissance.year
+        age_condition=False
         if(user.date_de_naissance.month<now.month or (user.date_de_naissance.month== now.month and user.date_de_naissance.day<now.day)):
             age =age -1
+
+        categories = self.__session.query(Categories)\
+                                .join(TournamentsCategories,TournamentsCategories.id_categorie==Categories.id)\
+                                .where(TournamentsCategories.id_tournament==id_tournament).all()
+        if len(categories)==0:
+            age_condition=True
+        else:
+            for category in categories:
+                if age>=category.age_min and age<=category.age_max:
+                    age_condition=True
 
         return tournament and user and\
             user.elo<=tournament.elo_max and user.elo>=tournament.elo_min and\
             ((tournament.women_only and user.genre==Users.Genders.Femme)or not tournament.women_only ) and\
             tournament.date_de_fin_inscription>datetime.now() and tournament.status==Tournaments.Status.EnAttente and\
-            nb_inscript<tournament.inscript_max
-        #age
+            nb_inscript<tournament.inscript_max and age_condition
 
 
     def register_user(self,id_user:int,id_tournament:int)->Inscriptions|None:

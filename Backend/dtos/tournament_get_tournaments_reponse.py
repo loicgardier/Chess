@@ -5,6 +5,8 @@ from repositories.tournaments_repository import TournamentsRepository
 from models.tournaments import Tournaments
 from repositories.users_repository import UsersRepository
 from models.users import Users
+from dtos.categories import Categories
+from repositories.categories_repository import CategoriesRepository
 
 class TournamentGetTournamentResponse(BaseModel):
 
@@ -14,6 +16,7 @@ class TournamentGetTournamentResponse(BaseModel):
     inscript:int = Field(description="Number of register user")
     elo_min:int = Field(description="Tournament elo min")
     elo_max:int = Field(description="Tournament elo max")
+    categories:list[Categories] = Field(description="list of accepted categories",default=[])
     status:Tournaments.Status = Field(description="Tournament status")
     ronde:int = Field(description="Tournament round")
     women_only:bool = Field(description="Is the tournament women only")
@@ -23,9 +26,14 @@ class TournamentGetTournamentResponse(BaseModel):
 
     def from_model(tournament_repository:TournamentsRepository,
                    user_repository:UsersRepository,
+                   category_repository:CategoriesRepository,
                    id:int,username:str=None):
         tournament = tournament_repository.get_one(id)
         if tournament:
+            categories_id = category_repository.get_by_tournament(tournament.id)
+            categories=[]
+            for category_id in categories_id:
+                categories.append(Categories(name=category_repository.get_one(category_id.id_categorie).name))
             tournament_dto= TournamentGetTournamentResponse(
                 id=tournament.id,
                 nom=tournament.nom,
@@ -36,7 +44,8 @@ class TournamentGetTournamentResponse(BaseModel):
                 ronde=tournament.ronde,
                 women_only=tournament.women_only,
                 date_de_fin_inscription=tournament.date_de_fin_inscription,
-                inscript= tournament_repository.get_nb_inscript(tournament.id)
+                inscript= tournament_repository.get_nb_inscript(tournament.id),
+                categories=categories
             )
 
             if username:

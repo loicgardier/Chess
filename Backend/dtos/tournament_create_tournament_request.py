@@ -1,6 +1,7 @@
 from pydantic import BaseModel,EmailStr,SecretStr,Field
 from models.tournaments import Tournaments
 from datetime import datetime,date
+from dtos.categories import Categories
 
 class TournamentCreateTournamentRequest(BaseModel):
 
@@ -12,7 +13,10 @@ class TournamentCreateTournamentRequest(BaseModel):
     elo_max:int = Field(description="Tournament elo max",default=3000)
     women_only:bool = Field(description="Is the tournament women only")
     date_de_fin_inscription: date = Field(description="Tournament date of end of registration")
+    categories:list[Categories] = Field(description="list of accepted categories",default=[])
 
+    def get_categories(self)->list[Categories]:
+        return self.categories
 
     def to_tournament_model(self)->Tournaments:
         tournament=Tournaments()
