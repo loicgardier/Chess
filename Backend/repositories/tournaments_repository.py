@@ -1,5 +1,5 @@
 from datetime import datetime
-
+from exceptions.tournaments_exceptions import IsAlreadyRegisterException,IsNotRegisteredException
 from sqlalchemy.orm import Session
 from models.tournaments_categories import TournamentsCategories
 from models.inscriptions import Inscriptions
@@ -123,16 +123,17 @@ class TournamentsRepository:
             nb_inscript<tournament.inscript_max and age_condition
 
 
-    def register_user(self,id_user:int,id_tournament:int)->Inscriptions|None:
+    def register_user(self,id_user:int,id_tournament:int)->bool:
+        if self.is_registered(id_user,id_tournament):
+            raise IsAlreadyRegisterException()
         if self.can_register(id_user,id_tournament):
             inscription=Inscriptions()
             inscription.id_user=id_user
             inscription.id_tournament=id_tournament
             self.__session.add(inscription)
             self.__session.commit()
-            self.__session.refresh(inscription)
-            return inscription
-        return None
+            return True
+        return False
 
     def is_registered(self,id_user:int,id_tournament:int)->bool:
         try:
@@ -145,9 +146,14 @@ class TournamentsRepository:
     def unregister_user(self,id_user:int,id_tournament:int)->bool:
         tournament = self.__session.get_one(Tournaments,id_tournament)
         if tournament and tournament.status==Tournaments.Status.EnAttente:
-            inscription=self.__session.get_one(Inscriptions,{'id_user':id_user,'id_tournament':id_tournament})
-            if inscription:
+
+            if self.is_registered(id_user,id_tournament):
+                inscription=Inscriptions()
+                inscription.id_tournament=id_tournament
+                inscription.id_user=id_user
                 self.__session.delete(inscription)
                 self.__session.commit()
                 return True
+            else:
+                raise IsNotRegisteredException()
         return False
