@@ -70,6 +70,40 @@ async def create_tournament(
     except jwt.PyJWTError as e:
         raise HTTPException(status_code=401,detail=f"Jeton d'accès invalide:{e}",headers={"WWW-Authenticate": "Bearer"})
 
+@tournament_router.delete('/{id}')
+async def register(
+    id:int=Path(),
+    tournament_repository:TournamentsRepository=Depends(TournamentsRepository),
+    mailer:Mailer=Depends(Mailer),
+    token:HTTPAuthorizationCredentials =Depends(security)
+    ):
+    try:
+        payload = jwt_utils.decode(token.credentials)
+        role=payload.get('role')
+        if role!=Users.Roles.Admin:
+                raise NotAdminException()
+        users= tournament_repository.get_inscript(id)
+        if tournament_repository.delete(id):
+            for user in users:
+                template_path = Path("Backend/templates/tournament_deleted.html")
+                body=template_path.read_text("utf-8")
+                body =body.format(name=user.pseudo,num=id)
+                mailer.send_mail('Crétion du compte',user.email,body)
+            return
+        else:
+            raise HTTPException(status_code=400,detail=f"Tournament {id} cannot be deleted")
+        
+    except NotAdminException:
+        raise HTTPException(status_code=403,detail=f"Role requis:{Users.Roles.Admin}")
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401,detail="Jeton d'accès expiré.",headers={"WWW-Authenticate": "Bearer"})
+    except jwt.InvalidSignatureError:
+        raise HTTPException(status_code=401,detail="Signature du jeton d'accès invalide.",headers={"WWW-Authenticate": "Bearer"})
+    except jwt.PyJWTError as e:
+        raise HTTPException(status_code=401,detail=f"Jeton d'accès invalide:{e}",headers={"WWW-Authenticate": "Bearer"})
+    
+
+
 @tournament_router.post('/{id}/register')
 async def register(
     id:int=Path(),

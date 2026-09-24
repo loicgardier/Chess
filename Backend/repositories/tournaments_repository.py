@@ -32,6 +32,9 @@ class TournamentsRepository:
     def get_nb_inscript(self,id:int)->int:
         return self.__session.query(Inscriptions).where(Inscriptions.id_tournament==id).count()
 
+    def get_inscript(self,id:int)->list[Users]:
+        return self.__session.query(Users).join(Inscriptions,Inscriptions.id_user==Users.id).where(Inscriptions.id_tournament==id).all()
+
     def add(self,tournament:Tournaments,categories:list[int])->Tournaments:
         self.__session.add(tournament)
         self.__session.flush()
