@@ -6,8 +6,10 @@ from models.inscriptions import Inscriptions
 from models.users import Users
 from models.tournaments import Tournaments
 from models.categories import Categories
+from models.rencontres import Rencontres
 from utils.session_utils import get_session
 from fastapi import Depends
+from sqlalchemy import func,case,and_,or_
 
 class TournamentsRepository:
 
@@ -78,13 +80,86 @@ class TournamentsRepository:
             return tournament_to_modify
         return None
 
-    def change_status(self,id:int,status:Tournaments.Status)->Tournaments|None:
-        tournament_to_modify= self.get_one(id)
-        if tournament_to_modify:
-            tournament_to_modify.status=status
-            tournament_to_modify.date_de_derniere_mise_a_jour=datetime.now()
+    def start(self,id:int)->bool:
+        tournament_to_start= self.get_one(id)
+        nb_inscript = self.get_nb_inscript(id)
+        if tournament_to_start and tournament_to_start.status==Tournaments.Status.EnAttente\
+            and tournament_to_start.date_de_fin_inscription<datetime.now() \
+            and tournament_to_start.inscript_min<=nb_inscript:
+            tournament_to_start.status=Tournaments.Status.EnCours
+            tournament_to_start.date_de_derniere_mise_a_jour=datetime.now()
+            tournament_to_start.ronde=1
+            self.__session.flush()
+            return self.generate_ronde(id)
+        return False
+
+    def validate_ronde(self,id:int)->bool:
+        tournament= self.get_one(id)
+        nb_inscript=self.get_nb_inscript(id)
+        if nb_inscript%2==0:
+            nb_inscript-=1
+        if tournament and tournament.status==tournament.Status.EnCours:
+            if self.__session.query(Rencontres).where(Rencontres.id_tournament==tournament.id)\
+                .where(Rencontres.ronde==tournament.ronde).where(Rencontres.resultat==Rencontres.Resulats.PasJoue)\
+                .count() ==0:
+                if tournament.ronde<nb_inscript:
+                        tournament.ronde+=1
+                        self.__session.flush()
+                        return self.generate_ronde(id)
+                else:
+                    tournament.status=Tournaments.Status.Termine
+                    self.__session.commit()
+                    return True
+        return False
+
+    def generate_ronde(self,id:int)->bool:
+        tournament= self.get_one(id)
+        if tournament:
+            users = self.__session.query(Users).join(Inscriptions,Users.id==Inscriptions.id_user)\
+                .where(Inscriptions.id_tournament==id).order_by(Users.id).all()
+
+            if len(users)%2==1:
+                dummy= Users()
+                dummy.id=-1
+                users.append(dummy)
+            fixed= users.pop(0)
+            size = len(users)
+            middle = (size//2 + tournament.ronde)%size
+
+            if users[middle].id!=-1:
+                rencontre_a = Rencontres()
+                rencontre_r = Rencontres()
+                rencontre_a.id_user_blanc=fixed.id
+                rencontre_a.id_user_noir=users[middle].id
+                rencontre_a.id_tournament=id
+                rencontre_a.ronde=tournament.ronde
+                rencontre_r.id_user_noir=fixed.id
+                rencontre_r.id_user_blanc=users[middle].id
+                rencontre_r.id_tournament=id
+                rencontre_r.ronde=tournament.ronde
+                self.__session.add(rencontre_a)
+                self.__session.add(rencontre_r)
+            
+            for i in range(1,size//2+1):
+                index_1= (middle+i)%size
+                index_2= (i+tournament.ronde-1)%size
+                if users[index_1].id!=-1 and users[index_2].id!=-1:
+                    rencontre_a = Rencontres()
+                    rencontre_r = Rencontres()
+                    rencontre_a.id_user_blanc=users[index_1].id
+                    rencontre_a.id_user_noir=users[index_2].id
+                    rencontre_a.id_tournament=id
+                    rencontre_a.ronde=tournament.ronde
+                    rencontre_r.id_user_noir=users[index_1].id
+                    rencontre_r.id_user_blanc=users[index_2].id
+                    rencontre_r.id_tournament=id
+                    rencontre_r.ronde=tournament.ronde
+                    self.__session.add(rencontre_a)
+                    self.__session.add(rencontre_r)
             self.__session.commit()
-            self.__session.refresh(tournament_to_modify)
+            return True
+        return False
+
 
 
     def delete(self,id:int)->bool:

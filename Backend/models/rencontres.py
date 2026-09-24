@@ -19,7 +19,7 @@ class Rencontres(Base):
     id_user_blanc:Mapped[int] = mapped_column(Integer,ForeignKey('users.id'),nullable=False)
     id_user_noir:Mapped[int] = mapped_column(Integer,ForeignKey('users.id'),nullable=False)
     ronde:Mapped[int] = mapped_column(Integer,nullable=False)
-    resultat:Mapped[Resulats] =mapped_column(Enum(Resulats),nullable=False)
+    resultat:Mapped[Resulats] =mapped_column(Enum(Resulats),nullable=False,default=Resulats.PasJoue)
 
     tournament: Mapped["Tournaments"] = relationship("Tournaments",back_populates="rencontres",uselist=False)  # pyright: ignore[reportUndefinedVariable]
     blanc: Mapped["Users"] = relationship("Users",back_populates="rencontres_blanc",uselist=False,foreign_keys=[id_user_blanc])  # pyright: ignore[reportUndefinedVariable]
