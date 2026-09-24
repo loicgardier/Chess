@@ -11,6 +11,7 @@ from fastapi.security import HTTPBearer,HTTPAuthorizationCredentials
 from dtos.tournament_get_tournaments_reponse import TournamentGetTournamentResponse
 from models.users import Users
 from dtos.tournament_create_tournament_request import TournamentCreateTournamentRequest
+from dtos.tournament_get_one_tournament_response import TournamentGetOneTournamentResponse
 import jwt
 
 tournament_router = APIRouter(prefix="/tournaments",tags=["tournaments"])
@@ -43,6 +44,33 @@ async def get_tournaments(
         tournament_data =TournamentGetTournamentResponse.from_model(tournament_repository,user_repository,category_repository,tournament.id,username)
         data_response.append(tournament_data)
     return data_response
+
+
+@tournament_router.get('/{id}')
+async def get_one_tournaments(
+    id:int=Path(),
+    tournament_repository:TournamentsRepository=Depends(TournamentsRepository),
+    user_repository:UsersRepository=Depends(UsersRepository),
+    category_repository:CategoriesRepository=Depends(CategoriesRepository),
+    token:HTTPAuthorizationCredentials =Depends(security_lax))->TournamentGetOneTournamentResponse:
+    username=None
+    if token:
+        try:
+            payload = jwt_utils.decode(token.credentials)
+            username=payload.get('pseudo')
+
+        except jwt.ExpiredSignatureError:
+            raise HTTPException(status_code=401,detail="Jeton d'accès expiré.",headers={"WWW-Authenticate": "Bearer"})
+        except jwt.InvalidSignatureError:
+            raise HTTPException(status_code=401,detail="Signature du jeton d'accès invalide.",headers={"WWW-Authenticate": "Bearer"})
+        except jwt.PyJWTError as e:
+            raise HTTPException(status_code=401,detail=f"Jeton d'accès invalide:{e}",headers={"WWW-Authenticate": "Bearer"})
+
+    tournament_data =TournamentGetOneTournamentResponse.from_model(tournament_repository,user_repository,category_repository,id,username)
+    if tournament_data:
+        return tournament_data
+    else:
+        raise HTTPException(status_code=400,detail=f"No tournament {id}")
 
 @tournament_router.post('/')
 async def create_tournament(
