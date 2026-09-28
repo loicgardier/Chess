@@ -8,8 +8,8 @@ class Inscriptions(Base):
     id_user:Mapped[int] = mapped_column(Integer,ForeignKey('users.id'),primary_key=True)
     id_tournament:Mapped[int] = mapped_column(Integer,ForeignKey('tournaments.id'),primary_key=True)
 
-    user : Mapped["Users"] = relationship("users",back_populates="inscriptions",uselist=False)  # pyright: ignore[reportUndefinedVariable]
-    tournament : Mapped["Tournaments"] = relationship("tournaments",back_populates="inscriptions",uselist=False)  # pyright: ignore[reportUndefinedVariable]
+    user : Mapped["Users"] = relationship("Users",back_populates="inscriptions",uselist=False)  # pyright: ignore[reportUndefinedVariable]
+    tournament : Mapped["Tournaments"] = relationship("Tournaments",back_populates="inscriptions",uselist=False)  # pyright: ignore[reportUndefinedVariable]
 
     def __repr__(self):
         return f'<Inscriptions {self.id_tournament} - {self.id_user}>'

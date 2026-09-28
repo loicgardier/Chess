@@ -1,26 +1,43 @@
 from sqlalchemy.orm import Session
-from DTOs.users import Users
+from models.users import Users
 from utils import hash_utils
 from sqlalchemy import or_
+from fastapi import Depends
+from utils.session_utils import get_session
+from exceptions.users_exceptions import ExistingMail,ExistingMailPseudo,ExistingPseudo,UnknowMailPseudo
 
 class UsersRepository:
 
-    def __init__(self,session:Session):
+    def __init__(self,session:Session=Depends(get_session)):
         self.__session=session
 
     def get_one(self,id:int)->Users|None:
         self.__session.get(Users,id)
 
+    def get_by_mail_or_pseudo(self,mail_or_pseudo:str)->Users|None:
+        return self.__session.query(Users).where(or_(Users.pseudo==mail_or_pseudo,Users.email==mail_or_pseudo)).first()
+
     def get_all(self)->list[Users]:
         return self.__session.query(Users).all()
 
-    def verify(self,id:str,password:str)->bool:
-        user = self.__session.query(Users).where(or_(Users.pseudo==id,Users.email==id)).first()
+    def verify(self,mail_or_pseudo:str,password:str)->bool:
+        user = self.get_by_mail_or_pseudo(mail_or_pseudo)
         if user:
             return hash_utils.verify(user.password,password)
-        return False
+        else:
+            raise UnknowMailPseudo()
 
     def add(self,user:Users)->Users:
+
+        pseudo = self.__session.query(Users).where(Users.pseudo==user.pseudo).first()
+        email = self.__session.query(Users).where(Users.email==user.email).first()
+        if pseudo and email:
+            raise ExistingMailPseudo()
+        elif email:
+            raise ExistingMail()
+        elif pseudo:
+            raise ExistingPseudo()
+
         user.password=hash_utils.hash(user.password)
         self.__session.add(user)
         self.__session.commit()

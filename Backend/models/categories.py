@@ -9,6 +9,8 @@ class Categories(Base):
 
     id:Mapped[int] = mapped_column(Integer,primary_key=True)
     name:Mapped[str] = mapped_column(String,unique=True,nullable=False)
+    age_min:Mapped[int] = mapped_column(Integer,nullable=False)
+    age_max:Mapped[int] = mapped_column(Integer,nullable=False)
 
     tournaments_categories : Mapped[list["TournamentsCategories"]] = relationship("TournamentsCategories",back_populates="categorie") # pyright: ignore[reportUndefinedVariable]
 

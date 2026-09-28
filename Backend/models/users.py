@@ -1,7 +1,8 @@
 from .base import Base
 from sqlalchemy.orm import Mapped,mapped_column,relationship
 from sqlalchemy import String,Integer,CheckConstraint,DateTime,Boolean
-from datetime import datetime
+from datetime import datetime,timedelta,timezone
+import os
 
 from enum import StrEnum,auto
 from sqlalchemy.types import Enum
@@ -28,9 +29,16 @@ class Users(Base):
     date_de_naissance: Mapped[datetime] = mapped_column(DateTime,nullable=False)
     allow_mail:Mapped[bool] =mapped_column(Boolean,nullable=False,default=False)
 
-    inscriptions : Mapped[list["Inscription"]] = relationship("Inscription",back_populates="user") # pyright: ignore[reportUndefinedVariable]
-    rencontres_blanc: Mapped[list["Rencontres"]] = relationship("Rencontres",back_populates="blanc") # pyright: ignore[reportUndefinedVariable]
-    rencontres_noir: Mapped[list["Rencontres"]] = relationship("Rencontres",back_populates="noir") # pyright: ignore[reportUndefinedVariable]
+    inscriptions : Mapped[list["Inscriptions"]] = relationship("Inscriptions",back_populates="user") # pyright: ignore[reportUndefinedVariable]
+    rencontres_blanc: Mapped[list["Rencontres"]] = relationship("Rencontres",back_populates="blanc",foreign_keys="Rencontres.id_user_blanc") # pyright: ignore[reportUndefinedVariable]
+    rencontres_noir: Mapped[list["Rencontres"]] = relationship("Rencontres",back_populates="noir",foreign_keys="Rencontres.id_user_noir") # pyright: ignore[reportUndefinedVariable]
 
     def __repr__(self):
         return f'<Users {self.id}>'
+
+    def to_jwt(self)->dict:
+        return {'sub':str(self.id),
+                'pseudo':self.pseudo,
+                'role':self.role,
+                'iat':datetime.now(timezone.utc),
+                'exp':datetime.now(timezone.utc)+timedelta(minutes=int(os.environ["ACCESS_TOKEN_EXPIRE_MINUTES"]))}

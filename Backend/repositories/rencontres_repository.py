@@ -2,8 +2,8 @@
 from datetime import datetime
 
 from sqlalchemy.orm import Session
-from DTOs.tournaments import Tournaments
-from DTOs.rencontres import Rencontres
+from models.tournaments import Tournaments
+from models.rencontres import Rencontres
 
 
 class RencontresRepository:
