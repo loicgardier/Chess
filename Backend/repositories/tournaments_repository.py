@@ -9,7 +9,6 @@ from models.categories import Categories
 from models.rencontres import Rencontres
 from utils.session_utils import get_session
 from fastapi import Depends
-from sqlalchemy import func,case,and_,or_
 
 class TournamentsRepository:
 

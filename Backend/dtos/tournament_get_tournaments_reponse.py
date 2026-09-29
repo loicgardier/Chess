@@ -5,7 +5,7 @@ from repositories.tournaments_repository import TournamentsRepository
 from models.tournaments import Tournaments
 from repositories.users_repository import UsersRepository
 from models.users import Users
-from dtos.categories import Categories
+from DTOs.categories import Categories
 from repositories.categories_repository import CategoriesRepository
 
 class TournamentGetTournamentResponse(BaseModel):

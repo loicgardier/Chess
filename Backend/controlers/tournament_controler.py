@@ -1,6 +1,7 @@
 from fastapi import APIRouter,Body,Depends,HTTPException
 from repositories.tournaments_repository import TournamentsRepository
 from repositories.categories_repository import CategoriesRepository
+from repositories.rencontres_repository import RencontresRepository
 from repositories.users_repository import UsersRepository
 from utils import jwt_utils  
 from exceptions.jwt_exceptions import NotAdminException
@@ -8,10 +9,10 @@ from exceptions.tournaments_exceptions import IsAlreadyRegisterException,IsNotRe
 from services.mailer import Mailer
 from pathlib import Path
 from fastapi.security import HTTPBearer,HTTPAuthorizationCredentials 
-from dtos.tournament_get_tournaments_reponse import TournamentGetTournamentResponse
+from DTOs.tournament_get_tournaments_reponse import TournamentGetTournamentResponse
 from models.users import Users
-from dtos.tournament_create_tournament_request import TournamentCreateTournamentRequest
-from dtos.tournament_get_one_tournament_response import TournamentGetOneTournamentResponse
+from DTOs.tournament_create_tournament_request import TournamentCreateTournamentRequest
+from DTOs.tournament_get_one_tournament_response import TournamentGetOneTournamentResponse
 import jwt
 
 tournament_router = APIRouter(prefix="/tournaments",tags=["tournaments"])
@@ -52,6 +53,7 @@ async def get_one_tournaments(
     tournament_repository:TournamentsRepository=Depends(TournamentsRepository),
     user_repository:UsersRepository=Depends(UsersRepository),
     category_repository:CategoriesRepository=Depends(CategoriesRepository),
+    rencontre_repository:RencontresRepository=Depends(RencontresRepository),
     token:HTTPAuthorizationCredentials =Depends(security_lax))->TournamentGetOneTournamentResponse:
     username=None
     if token:
@@ -66,7 +68,7 @@ async def get_one_tournaments(
         except jwt.PyJWTError as e:
             raise HTTPException(status_code=401,detail=f"Jeton d'accès invalide:{e}",headers={"WWW-Authenticate": "Bearer"})
 
-    tournament_data =TournamentGetOneTournamentResponse.from_model(tournament_repository,user_repository,category_repository,id,username)
+    tournament_data =TournamentGetOneTournamentResponse.from_model(tournament_repository,user_repository,category_repository,rencontre_repository,id,username)
     if tournament_data:
         return tournament_data
     else:

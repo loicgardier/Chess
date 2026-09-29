@@ -5,8 +5,9 @@ from repositories.tournaments_repository import TournamentsRepository
 from models.tournaments import Tournaments
 from repositories.users_repository import UsersRepository
 from models.users import Users
-from dtos.categories import Categories
+from .categories import Categories
 from repositories.categories_repository import CategoriesRepository
+from repositories.rencontres_repository import RencontresRepository
 
 class TournamentGetOneTournamentResponse(BaseModel):
 
@@ -24,10 +25,12 @@ class TournamentGetOneTournamentResponse(BaseModel):
     can_register:bool|None = Field(description="Can the user register",default=None)
     is_registered:bool|None = Field(description="Is the userregistered",default=None)
     inscripts:list[str] = Field(description="List of register user")
+    rencontres:list[str] = Field(description="Liste des rencontres de la ronde actuel")
 
     def from_model(tournament_repository:TournamentsRepository,
                    user_repository:UsersRepository,
                    category_repository:CategoriesRepository,
+                   rencontre_repository:RencontresRepository,
                    id:int,username:str=None):
         tournament = tournament_repository.get_one(id)
         if tournament:
@@ -37,6 +40,10 @@ class TournamentGetOneTournamentResponse(BaseModel):
                 categories.append(Categories(name=category_repository.get_one(category_id.id_categorie).name))
             inscripts = tournament_repository.get_inscript(tournament.id)
             inscripts_pseudo = [inscript.pseudo for inscript in inscripts]
+            rencontres = rencontre_repository.get_by_roud(tournament.id)
+            rencontres_str=[]
+            for rencontre in rencontres:
+                rencontres_str.append(f"id:{rencontre[0].id} blanc:{rencontre[1]} noir:{rencontre[2]} result:{rencontre[0].resultat}")
 
             tournament_dto= TournamentGetOneTournamentResponse(
                 id=tournament.id,
@@ -50,7 +57,8 @@ class TournamentGetOneTournamentResponse(BaseModel):
                 date_de_fin_inscription=tournament.date_de_fin_inscription,
                 inscript= tournament_repository.get_nb_inscript(tournament.id),
                 categories=categories,
-                inscripts=inscripts_pseudo
+                inscripts=inscripts_pseudo,
+                rencontres=rencontres_str
             )
 
             if username:

@@ -1,7 +1,7 @@
 from pydantic import BaseModel,EmailStr,SecretStr,Field
 from models.tournaments import Tournaments
 from datetime import datetime,date
-from dtos.categories import Categories
+from DTOs.categories import Categories
 
 class TournamentCreateTournamentRequest(BaseModel):
 
