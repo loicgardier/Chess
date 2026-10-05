@@ -7,6 +7,7 @@ from models.rencontres import Rencontres
 from models.users import Users
 from utils.session_utils import get_session
 from fastapi import Depends
+from exceptions.rencontres_exceptions import RencontresNonExistant,RondeFinie
 
 class RencontresRepository:
 
@@ -31,9 +32,14 @@ class RencontresRepository:
         return self.__session.query(Rencontres).all()   
 
     def change_result(self,id:int,result:Rencontres.Resulats)->bool:
-        rencontre = self.__session.get_one(Rencontres,id)
-        if rencontre:
-            rencontre.resultat=result
-            self.__session.commit()
-            return True
-        return False
+        try:
+            rencontre = self.__session.get_one(Rencontres,id)
+            tournament = self.__session.query(Tournaments).where(Tournaments.id==rencontre.id_tournament).where(Tournaments.ronde==rencontre.ronde).first()
+            if tournament:
+                rencontre.resultat=result
+                self.__session.commit()
+                return True
+            else:
+                raise RondeFinie()
+        except:
+            raise RencontresNonExistant()

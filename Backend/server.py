@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from controlers import user_controler,tournament_controler
+from controlers import user_controler,tournament_controler,match_controler
 import uvicorn
 from dotenv import load_dotenv
 import os
@@ -19,6 +19,7 @@ allow_headers=["*"],
 
 app.include_router(user_controler.user_router)
 app.include_router(tournament_controler.tournament_router)
+app.include_router(match_controler.match_router)
 
 if __name__ == "__main__":
     uvicorn.run("server:app", host="0.0.0.0", port=8000,reload=True)
