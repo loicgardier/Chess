@@ -101,7 +101,7 @@ async def create_tournament(
         raise HTTPException(status_code=401,detail=f"Jeton d'accès invalide:{e}",headers={"WWW-Authenticate": "Bearer"})
 
 @tournament_router.delete('/{id}')
-async def register(
+async def delete_tournament(
     id:int=Path(),
     tournament_repository:TournamentsRepository=Depends(TournamentsRepository),
     mailer:Mailer=Depends(Mailer),
@@ -187,7 +187,7 @@ async def unregister(
 
 
 @tournament_router.post('/{id}/start')
-async def start(
+async def start_tournament(
     id:int=Path(),
     tournament_repository:TournamentsRepository=Depends(TournamentsRepository),
     token:HTTPAuthorizationCredentials =Depends(security)
@@ -212,7 +212,7 @@ async def start(
         raise HTTPException(status_code=403,detail=f"Role requis:{Users.Roles.Admin}")
 
 @tournament_router.post('/{id}/validate')
-async def validate(
+async def validate_round(
     id:int=Path(),
     tournament_repository:TournamentsRepository=Depends(TournamentsRepository),
     token:HTTPAuthorizationCredentials =Depends(security)
