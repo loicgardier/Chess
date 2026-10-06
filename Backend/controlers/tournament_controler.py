@@ -235,3 +235,17 @@ async def validate_round(
         raise HTTPException(status_code=401,detail=f"Jeton d'accès invalide:{e}",headers={"WWW-Authenticate": "Bearer"})
     except NotAdminException:
         raise HTTPException(status_code=403,detail=f"Role requis:{Users.Roles.Admin}")
+
+
+@tournament_router.get('/{id}/leaderboard')
+async def get_tournament_leaderboard(
+    id:int=Path(),
+    tournament_repository:TournamentsRepository=Depends(TournamentsRepository)):
+    return tournament_repository.get_leaderboard(id)
+
+@tournament_router.get('/{id_tournament}/round/{id_round}/leaderboard')
+async def get_tournament_leaderboard(
+    id_tournament:int=Path(),
+    id_round:int=Path(),
+    tournament_repository:TournamentsRepository=Depends(TournamentsRepository)):
+    return tournament_repository.get_leaderboard(id_tournament,id_round)

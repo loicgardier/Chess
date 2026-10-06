@@ -9,6 +9,9 @@ from models.categories import Categories
 from models.rencontres import Rencontres
 from utils.session_utils import get_session
 from fastapi import Depends
+from DTOs.leaderboard_response import LeaderboardResponse
+
+from sqlalchemy import select,func,case
 
 class TournamentsRepository:
 
@@ -234,3 +237,29 @@ class TournamentsRepository:
             else:
                 raise IsNotRegisteredException()
         return False
+
+    def get_leaderboard(self,id_tournament:int,id_round:int =0)->list[LeaderboardResponse]:
+        base = select(Rencontres).where(Rencontres.id_tournament==id_tournament).where(Rencontres.ronde <= id_round if id_round!=0 else True).subquery()
+        noir = select(base.c.id_user_noir.label("id_user"),
+                           case( (base.c.resultat=="Noir",1),else_=0).label("victoire"),
+                           case( (base.c.resultat=="Equalite",1),else_=0).label("equalite"),
+                           case( (base.c.resultat=="Blanc",1),else_=0).label("defaite"))
+        blanc = select(base.c.id_user_blanc.label("id_user"),
+                            case( (base.c.resultat=="Blanc",1),else_=0).label("victoire"),
+                            case( (base.c.resultat=="Equalite",1),else_=0).label("equalite"),
+                            case( (base.c.resultat=="Noir",1),else_=0).label("defaite"))
+        total = noir.union_all(blanc).subquery()
+
+        scores = select(total.c.id_user.label("id_user"),
+                      func.sum(total.c.victoire).label('victoire'),
+                      func.sum(total.c.equalite).label('equalite'),
+                      func.sum(total.c.defaite).label('defaite')
+                      ).group_by(total.c.id_user).subquery()
+
+        results = self.__session.query(Users.pseudo,scores.c.victoire,scores.c.equalite,scores.c.defaite).join(scores,Users.id==scores.c.id_user).all()
+        return [ LeaderboardResponse(
+            pseudo=result.pseudo,
+            victoire=result.victoire,
+            equalite=result.equalite,
+            defaite=result.defaite,
+        )  for result in results ]
