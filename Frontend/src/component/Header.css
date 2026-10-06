@@ -1,0 +1,12 @@
+nav{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    background-color: aquamarine;
+}
+a{
+    text-decoration: none;
+    padding: .25em;
+    margin: .25em;
+    color: black;
+}
