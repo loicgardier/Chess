@@ -1,16 +1,21 @@
 import './Header.css'
 import { jwtDecode } from 'jwt-decode'
 import type { MyJwt } from '../types/my_jwt'
+import { TokenContext } from '../utils/token_context'
+import { use } from 'react'
 
-function Header ({token}:{token:string}){
+function Header (){
     let role= 'None'
-    if (token)
+    const tokenContext= use(TokenContext)
+    if(tokenContext)
     {
-        const [_,payload_64,__] = token.split('.')
-        const payload = jwtDecode<MyJwt>(payload_64)
-        role = payload.role
+        const [token] = tokenContext
+        if (token)
+        {
+            const payload = jwtDecode<MyJwt>(token)
+            role = payload.role
+        }
     }
-
 
     return<>
         <nav>
