@@ -5,6 +5,7 @@ import { useEffect } from 'react';
 import { useAtomValue,useAtom } from 'jotai';
 import { urlAtom,mainAtom,tokenAtom } from './atoms/atoms';
 import Inscription from './component/Inscription/Inscription';
+import Accueil from './component/Accueil/Accueil';
 
 function App() {
 
@@ -36,7 +37,7 @@ function App() {
       <Header/>
       {(()=>{
         switch(main){
-          case 'Accueil': break;
+          case 'Accueil': return <Accueil/>;
           case 'Tournois' :break
           case 'Rondes' : break
           case 'Connection': return <Connection/>
