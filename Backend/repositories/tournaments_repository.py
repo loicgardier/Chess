@@ -30,9 +30,6 @@ class TournamentsRepository:
     def get_all(self)->list[Tournaments]:
         return self.__session.query(Tournaments).all()
 
-    def get_categories(self)->list[TournamentsCategories]:
-        return self.__session.query(TournamentsCategories).all()
-
     def get_nb_inscript(self,id:int)->int:
         return self.__session.query(Inscriptions).where(Inscriptions.id_tournament==id).count()
 

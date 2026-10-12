@@ -25,7 +25,7 @@ function Connection ( ){
             credentials: 'include',
         }).then(response=>{
             if(!response.ok)
-                throw response.status
+                throw response
             return response.json()
         }).then(data=>{
             console.log(data)
