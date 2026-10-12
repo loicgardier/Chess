@@ -1,17 +1,19 @@
 import './App.css'
 import Header from './component/Header/Header'
-import { MyContext } from './utils/my_context';
 import Connection from './component/Connection/Connection';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
+import { useAtomValue,useAtom } from 'jotai';
+import { urlAtom,mainAtom,tokenAtom } from './atoms/atoms';
+import Inscription from './component/Inscription/Inscription';
 
 function App() {
-  const Token = useState('')
-  const Main = useState('Accueil')
-  const context = {Token,Main}
-  const [main,_] =context.Main
+
+  const [main,_] = useAtom(mainAtom)
+  const [__,setToken] = useAtom(tokenAtom)
+  const url = useAtomValue(urlAtom)
 
   useEffect(()=>{
-    fetch("http://localhost:8000"+"/users/refresh",{
+    fetch(url+"/users/refresh",{
             method:'POST',
             headers:{
                 'accept': '*/*'
@@ -23,7 +25,7 @@ function App() {
             return response.json()
         }).then(data=>{
             console.log(data)
-            Token[1](data.token)
+            setToken(data.token)
         }).catch(e=>{
           console.log(e)
         })
@@ -31,17 +33,17 @@ function App() {
 
   return (
     <>
-    <MyContext value={context}>
       <Header/>
       {(()=>{
         switch(main){
           case 'Accueil': break;
+          case 'Tournois' :break
+          case 'Rondes' : break
           case 'Connection': return <Connection/>
+          case 'Inscription': return <Inscription/>
         }
         return <></>
       })()}
-    </MyContext>
-
     </>
   )
 }

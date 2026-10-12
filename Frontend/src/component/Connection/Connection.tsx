@@ -1,18 +1,18 @@
-import { use, useState, type MouseEvent } from "react"
-import { MyContext } from "../../utils/my_context"
+import { useAtom, useAtomValue } from "jotai";
+import { useState, type MouseEvent } from "react"
+import { mainAtom, tokenAtom, urlAtom } from "../../atoms/atoms";
 function Connection ( ){
     const [pseudo,setPseudo] = useState('')
     const [password,setPassword] = useState('')
-    const context= use(MyContext)
-    if(!context)
-    {
-        throw new Error('Missing context');
-    }
-    const [_,setToken] = context.Token 
+    const url = useAtomValue(urlAtom)
+
+
+    const [_,setToken] = useAtom(tokenAtom)
+    const [__,setMain] =useAtom(mainAtom)
 
     const HandleSubmit = (event:MouseEvent)=>{
         event.preventDefault()
-        fetch("http://localhost:8000"+"/users/connection",{
+        fetch(url+"/users/connection",{
             method:'POST',
             headers:{
                 'Content-Type': 'application/json',
@@ -30,6 +30,8 @@ function Connection ( ){
         }).then(data=>{
             console.log(data)
             setToken(data.token)
+            setMain('Accueil')
+
         })
     }
 
