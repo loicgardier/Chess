@@ -1,6 +1,6 @@
 import './Header.css'
 import { jwtDecode } from 'jwt-decode'
-import type { MyJwt } from '../../types/my_jwt'
+import type { MyJwt } from '../../@types/my_jwt'
 import { type MouseEvent } from 'react'
 import { useAtom, useAtomValue } from 'jotai'
 import { mainAtom, tokenAtom, urlAtom } from '../../atoms/atoms'

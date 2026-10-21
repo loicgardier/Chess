@@ -225,9 +225,7 @@ class TournamentsRepository:
         if tournament and tournament.status==Tournaments.Status.EnAttente:
 
             if self.is_registered(id_user,id_tournament):
-                inscription=Inscriptions()
-                inscription.id_tournament=id_tournament
-                inscription.id_user=id_user
+                inscription=self.__session.get_one(Inscriptions,{'id_user':id_user,'id_tournament':id_tournament})
                 self.__session.delete(inscription)
                 self.__session.commit()
                 return True

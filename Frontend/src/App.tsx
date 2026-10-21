@@ -6,6 +6,7 @@ import { useAtomValue,useAtom } from 'jotai';
 import { urlAtom,mainAtom,tokenAtom } from './atoms/atoms';
 import Inscription from './component/Inscription/Inscription';
 import Accueil from './component/Accueil/Accueil';
+import Tournois from './component/Tournois/Tournois';
 
 function App() {
 
@@ -37,8 +38,8 @@ function App() {
       <Header/>
       {(()=>{
         switch(main){
-          case 'Accueil': return <Accueil/>;
-          case 'Tournois' :break
+          case 'Accueil': return <Accueil/>
+          case 'Tournois' :return <Tournois/>
           case 'Rondes' : break
           case 'Connection': return <Connection/>
           case 'Inscription': return <Inscription/>
