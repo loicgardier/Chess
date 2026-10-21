@@ -19,3 +19,12 @@ export const mainAtom = atom(
         set(_main,main)
     }
 )
+
+const _tournament_id = atom(0)
+
+export const tournamentIdAtom = atom(
+    (get)=>get(_tournament_id),
+    (get,set,tournamentIdAtom:number)=>{
+        set(_tournament_id,tournamentIdAtom)
+    }
+)

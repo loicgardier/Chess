@@ -11,6 +11,12 @@ from repositories.rencontres_repository import RencontresRepository
 
 class TournamentGetOneTournamentResponse(BaseModel):
 
+    class Rencontre(BaseModel):
+        id:int = Field(description="Rencontre id") 
+        blanc:str = Field(description = "Pseudo of white player")
+        noir:str = Field(description = "Pseudo of black player")
+        result:str = Field(description = "Result")
+
     id:int = Field(description="Tournament id")
     nom:str = Field(description="Tournament name")
     lieu:str|None = Field(description="Tournament place")
@@ -25,7 +31,7 @@ class TournamentGetOneTournamentResponse(BaseModel):
     can_register:bool|None = Field(description="Can the user register",default=None)
     is_registered:bool|None = Field(description="Is the userregistered",default=None)
     inscripts:list[str] = Field(description="List of register user")
-    rencontres:list[str] = Field(description="Liste des rencontres de la ronde actuel")
+    rencontres:list[Rencontre] = Field(description="Liste des rencontres de la ronde actuel")
 
     def from_model(tournament_repository:TournamentsRepository,
                    user_repository:UsersRepository,
@@ -43,7 +49,7 @@ class TournamentGetOneTournamentResponse(BaseModel):
             rencontres = rencontre_repository.get_by_roud(tournament.id)
             rencontres_str=[]
             for rencontre in rencontres:
-                rencontres_str.append(f"id:{rencontre[0].id} blanc:{rencontre[1]} noir:{rencontre[2]} result:{rencontre[0].resultat}")
+                rencontres_str.append({"id":rencontre[0].id, "blanc":rencontre[1], "noir":rencontre[2], "result":rencontre[0].resultat})
 
             tournament_dto= TournamentGetOneTournamentResponse(
                 id=tournament.id,

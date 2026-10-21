@@ -7,6 +7,7 @@ import { urlAtom,mainAtom,tokenAtom } from './atoms/atoms';
 import Inscription from './component/Inscription/Inscription';
 import Accueil from './component/Accueil/Accueil';
 import Tournois from './component/Tournois/Tournois';
+import DetailTournament from './component/DetailTournament/DetailTournament';
 
 function App() {
 
@@ -43,6 +44,8 @@ function App() {
           case 'Rondes' : break
           case 'Connection': return <Connection/>
           case 'Inscription': return <Inscription/>
+          case 'CreateTournament': break
+          case 'DetailTournament': return <DetailTournament/>
         }
         return <></>
       })()}

@@ -10,11 +10,11 @@ from exceptions.rencontres_exceptions import RencontresNonExistant,RondeFinie
 
 import jwt
 
-match_router = APIRouter(prefix="/tournaments",tags=["match"])
+match_router = APIRouter(prefix="/match",tags=["match"])
 
 security = HTTPBearer()
 
-@match_router.post('/{id}')
+@match_router.patch('/{id}')
 async def set_match_result(
     id:int=Path(),
     result:Rencontres.Resulats=Body(),
